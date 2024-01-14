@@ -13,7 +13,7 @@ pub struct Preprocessor;
 
 impl mdbook::preprocess::Preprocessor for Preprocessor {
     fn name(&self) -> &str {
-        "callouts"
+        "alerts"
     }
 
     fn supports_renderer(&self, renderer: &str) -> bool {
