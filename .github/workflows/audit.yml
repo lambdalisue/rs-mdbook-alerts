@@ -1,0 +1,38 @@
+name: Audit
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  push:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+
+jobs:
+  security_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Update local toolchain
+        run: |
+          rustup update
+          cargo install --force cargo-audit
+      - name: Toolchain info
+        run: |
+          rustc --version
+          cargo --version --verbose
+          cargo audit --version
+      - name: Install cargo-audit
+        run: |
+      - name: Audit check
+        run: |
+          cargo audit
