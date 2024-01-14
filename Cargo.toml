@@ -8,7 +8,7 @@ description = "mdBook preprocessor to add GitHub Flavored Markdown's Alerts to y
 repository = "https://github.com/lambdalisue/rs-mdbook-alerts"
 license = "MIT"
 readme = "README.md"
-keywords = [ "mdbook", "preprocessor", "markdown", "github", "alerts", "callouts" ]
+keywords = [ "mdbook", "preprocessor", "markdown", "github" ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
