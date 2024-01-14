@@ -1,0 +1,11 @@
+[book]
+authors = ["Alisue"]
+language = "en"
+multilingual = false
+src = "example/src"
+title = "Example of mdbook-alerts"
+
+[build]
+build-dir = "example/book"
+
+[preprocessor.alerts]

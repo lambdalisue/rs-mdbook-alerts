@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Alisue <lambdalisue@gmail.com>"]
 edition = "2021"
 
-description = ""
+description = "mdBook preprocessor to add GitHub Flavored Markdown's Alerts to your book"
 repository = "https://github.com/lambdalisue/rs-mdbook-alerts"
 license = "MIT"
 readme = "README.md"
@@ -13,3 +13,12 @@ keywords = [ "mdbook", "preprocessor", "markdown", "github", "alerts", "callouts
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.79"
+clap = { version = "4.4.16", features = ["derive"] }
+mdbook = "0.4.36"
+once_cell = "1.19.0"
+regex = "1.10.2"
+rust-embed = "8.2.0"
+semver = "1.0.21"
+serde = { version = "1.0.195", features = ["serde_derive"] }
+serde_json = "1.0.111"
