@@ -13,7 +13,7 @@ keywords = ["mdbook", "preprocessor", "markdown", "github"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.83"
+anyhow = "1.0.86"
 clap = { version = "4.5.4", features = ["derive"] }
 mdbook = "0.4.39"
 once_cell = "1.19.0"
