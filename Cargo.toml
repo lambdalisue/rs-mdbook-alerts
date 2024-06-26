@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-alerts"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Alisue <lambdalisue@gmail.com>"]
 edition = "2021"
 
