@@ -1,0 +1,133 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - v[0-9]+.*
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  build:
+    name: Build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - name: Calculate Release Version
+        id: calc-version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            short_sha=$(echo "${{ github.sha }}" | awk '{print substr($0,0,5)}')
+            echo "RELEASE_VERSION=nightly-$(date '+%Y-%m-%d')-$short_sha" >> $GITHUB_OUTPUT
+          else
+            echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.target }}
+
+      - name: install cross
+        if: contains(matrix.target, 'aarch64') && matrix.os == 'ubuntu-latest'
+        uses: taiki-e/install-action@cross
+
+      - name: Install musl-tools
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo apt install -y musl-tools
+
+      - name: Build
+        if: ${{ !(contains(matrix.target, 'aarch64') && matrix.os == 'ubuntu-latest') }}
+        run: cargo build --release --bin mdbook-alerts --target ${{ matrix.target }}
+
+      - name: Build with cross
+        if: contains(matrix.target, 'aarch64') && matrix.os == 'ubuntu-latest'
+        run: cross build --release --bin mdbook-alerts --target ${{ matrix.target }}
+
+      - name: Prepare artifacts [Windows]
+        shell: bash
+        if: matrix.os == 'windows-latest'
+        id: prep-artifacts-windows
+        run: |
+          release_dir="mdbook-alerts_${{ steps.calc-version.outputs.RELEASE_VERSION }}"
+          artifact_path="mdbook-alerts_${{ steps.calc-version.outputs.RELEASE_VERSION }}-${{ matrix.target }}.zip"
+          echo "ARTIFACT_NAME=$release_dir-${{ matrix.target }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_OUTPUT
+          mkdir $release_dir
+          cp target/${{ matrix.target }}/release/mdbook-alerts.exe $release_dir/
+          cp LICENSE $release_dir/
+          7z a -tzip $artifact_path $release_dir/
+
+      - name: Prepare artifacts [Unix]
+        shell: bash
+        id: prep-artifacts-unix
+        if: matrix.os != 'windows-latest'
+        run: |
+          release_dir="mdbook-alerts_${{ steps.calc-version.outputs.RELEASE_VERSION }}"
+          artifact_path="mdbook-alerts_${{ steps.calc-version.outputs.RELEASE_VERSION }}-${{ matrix.target }}.tar.gz"
+          echo "ARTIFACT_NAME=$release_dir-${{ matrix.target }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_PATH=$artifact_path" >> $GITHUB_OUTPUT
+          mkdir $release_dir
+          cp target/${{ matrix.target }}/release/mdbook-alerts $release_dir/
+          cp LICENSE $release_dir
+          tar -czvf $artifact_path $release_dir/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.prep-artifacts-unix.outputs.ARTIFACT_NAME || steps.prep-artifacts-windows.outputs.ARTIFACT_NAME }}
+          path: ${{ steps.prep-artifacts-unix.outputs.ARTIFACT_PATH || steps.prep-artifacts-windows.outputs.ARTIFACT_PATH }}
+          if-no-files-found: error
+
+  release:
+    if: startswith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup update stable --no-self-update
+      - run: cargo publish
+        if: github.repository == 'lambdalisue/rs-mdbook-alerts'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Download build assets
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mdbook-alerts_*
+          path: dist
+      - name: Create a Github Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          files=$(ls dist/mdbook-alerts_*/*{tar.gz,zip})
+          gh release create ${{ github.ref_name }} --generate-notes $files
