@@ -1,0 +1,77 @@
+name: Bump version number
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-component:
+        type: choice
+        default: 'patch'
+        required: true
+        options:
+          - 'major'
+          - 'minor'
+          - 'patch'
+
+jobs:
+
+  bump:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # here we need v3.10+
+          python-version: 3.x
+
+      - run: pip install toml
+      - name: increment version
+        id: inc-ver
+        shell: python
+        run: |-
+          from os import environ
+          from pathlib import Path
+          from typing import cast, Dict
+          import toml
+
+          COMPONENTS = ["major", "minor", "patch"]
+
+          cargo_file = Path("Cargo.toml")
+          assert cargo_file.exists()
+          data = cast(
+              Dict[str, Dict[str, str]],
+              toml.loads(cargo_file.read_text(encoding="utf-8")),
+          )
+          assert "package" in data
+          assert "version" in data["package"]
+          old_version = data["package"]["version"]
+          print("Current version:", old_version)
+          new_ver = [int(x) for x in old_version.split(".")]
+          component = COMPONENTS.index("${{ inputs.version-component }}")
+          new_ver[component] += 1
+          # zero out minor and patch components if needed
+          for i in range(component + 1, len(COMPONENTS)):
+              new_ver[i] = 0
+          new_version = ".".join([str(x) for x in new_ver])
+          data["package"]["version"] = new_version
+          print("New version:", new_version)
+          cargo_file.write_text(toml.dumps(data), encoding="utf-8", newline="\n")
+
+          # create an output variables for use in CI workflow
+          if "GITHUB_OUTPUT" in environ:
+              with open(environ["GITHUB_OUTPUT"], mode="a") as gh_out:
+                  gh_out.write(f"new-version={new_version}\n")
+
+      - run: cargo update
+
+      - name: Push metadata changes and tag
+        run: |-
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git add --all
+          git commit -m "bump version to v${{ steps.inc-ver.outputs.new-version }}"
+          git push
+          git tag v${{ steps.inc-ver.outputs.new-version }}
+          git push origin v${{ steps.inc-ver.outputs.new-version }}
