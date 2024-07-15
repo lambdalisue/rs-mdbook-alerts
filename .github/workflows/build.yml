@@ -5,6 +5,8 @@ on:
     branches:
       - main
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -54,3 +56,37 @@ jobs:
       - name: Build
         run: |
           cross build --release --all-features --target ${{ matrix.target }}
+      - name: Rename
+        run: |
+          mv target/${{ matrix.target }}/release/mdbook-alerts ./mdbook-alerts-${{ matrix.target }}
+        if: ${{ runner.os != 'Windows' }}
+      - name: Rename
+        run: |
+          mv target/${{ matrix.target }}/release/mdbook-alerts.exe ./mdbook-alerts-${{ matrix.target }}.exe
+        if: ${{ runner.os == 'Windows' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mdbook-alerts-${{ matrix.target }}
+          path: |
+            ./mdbook-alerts-${{ matrix.target }}
+            ./mdbook-alerts-${{ matrix.target }}.exe
+          if-no-files-found: error
+
+  release:
+    if: ${{ github.event_name == 'release' }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - run: find .
+      - uses: ncipollo/release-action@v1.14.0
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: ./artifacts/mdbook-alerts-*/mdbook-alerts-*
+          removeArtifacts: true
