@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "mdbook-alerts"
-version = "0.5.2"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "clap",
