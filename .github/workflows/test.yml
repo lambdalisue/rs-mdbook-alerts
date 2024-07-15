@@ -82,7 +82,7 @@ jobs:
         run: |
           rustup update
           rustup component add llvm-tools-preview
-          cargo install cargo-llvm-cov
+          cargo install cargo-llvm-cov --force
       - name: Toolchain info
         run: |
           rustc --version
