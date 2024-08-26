@@ -21,4 +21,4 @@ regex = "1.10.6"
 rust-embed = "8.5.0"
 semver = "1.0.23"
 serde = { version = "1.0.209", features = ["serde_derive"] }
-serde_json = "1.0.125"
+serde_json = "1.0.127"
