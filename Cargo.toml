@@ -15,7 +15,7 @@ keywords = ["mdbook", "preprocessor", "markdown", "github"]
 [dependencies]
 anyhow = "1.0.95"
 clap = { version = "4.5.35", features = ["derive"] }
-mdbook = "0.4.43"
+mdbook = "0.4.50"
 once_cell = "1.21.3"
 regex = "1.11.1"
 rust-embed = "8.5.0"
