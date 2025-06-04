@@ -71,3 +71,31 @@ fn render_alerts(content: &str) -> Result<String, Error> {
     });
     Ok(content.into())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use indoc::indoc;
+    use insta::assert_debug_snapshot;
+    use insta::assert_snapshot;
+
+    #[test]
+    fn test_render_alerts() {
+        let content = indoc! {r#"
+        This should be a paragraph.
+
+        > This should be a blockquote.
+        > This should be in a previous blockquote.
+
+        > [!NOTE]
+        > This should be alert.
+        > This should be in a previous alert.
+
+        This should be a paragraph.
+        "#};
+
+        let result = render_alerts(content).unwrap();
+        assert_debug_snapshot!(result);
+        assert_snapshot!(result);
+    }
+}
