@@ -55,6 +55,7 @@ fn render_alerts(content: &str) -> Result<String, Error> {
     });
     let alerts = Asset::get("alerts.tmpl").expect("alerts.tmpl not found in assets");
     let alerts = std::str::from_utf8(alerts.data.as_ref())?;
+    let alerts = alerts.replace("\r\n", "\n");
     let newline = find_newline(content);
     let content = content.replace(&newline, "\n");
     let content = content.as_str();
