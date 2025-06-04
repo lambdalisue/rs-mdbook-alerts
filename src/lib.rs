@@ -71,9 +71,13 @@ fn render_alerts(content: &str) -> Result<String, Error> {
     });
     Ok(content.into())
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use indoc::indoc;
+    use insta::assert_debug_snapshot;
+    use insta::assert_snapshot;
 
     #[test]
     fn test_inject_stylesheet_includes_css() {
@@ -93,17 +97,18 @@ mod tests {
         assert!(output.contains("This is a note."));
         assert_eq!(
             output,
-            r#"<div class="mdbook-alerts mdbook-alerts-note">
-<p class="mdbook-alerts-title">
-  <span class="mdbook-alerts-icon"></span>
-  note
-</p>
-
-
-This is a note.
-
-</div>
-"#
+            indoc! {r#"
+            <div class="mdbook-alerts mdbook-alerts-note">
+            <p class="mdbook-alerts-title">
+              <span class="mdbook-alerts-icon"></span>
+              note
+            </p>
+            
+            
+            This is a note.
+            
+            </div>
+            "#}
         );
     }
 
@@ -117,29 +122,50 @@ This is a note.
         assert!(output.contains("Tip 2."));
         assert_eq!(
             output,
-            r#"<div class="mdbook-alerts mdbook-alerts-warning">
-<p class="mdbook-alerts-title">
-  <span class="mdbook-alerts-icon"></span>
-  warning
-</p>
+            indoc! {r#"
+            <div class="mdbook-alerts mdbook-alerts-warning">
+            <p class="mdbook-alerts-title">
+              <span class="mdbook-alerts-icon"></span>
+              warning
+            </p>
 
 
-Warning 1.
+            Warning 1.
 
-</div>
-
-
-<div class="mdbook-alerts mdbook-alerts-tip">
-<p class="mdbook-alerts-title">
-  <span class="mdbook-alerts-icon"></span>
-  tip
-</p>
+            </div>
 
 
-Tip 2.
+            <div class="mdbook-alerts mdbook-alerts-tip">
+            <p class="mdbook-alerts-title">
+              <span class="mdbook-alerts-icon"></span>
+              tip
+            </p>
 
-</div>
-"#
+
+            Tip 2.
+
+            </div>
+            "#}
         );
+    }
+
+    #[test]
+    fn test_render_alerts() {
+        let content = indoc! {r#"
+        This should be a paragraph.
+
+        > This should be a blockquote.
+        > This should be in a previous blockquote.
+
+        > [!NOTE]
+        > This should be alert.
+        > This should be in a previous alert.
+
+        This should be a paragraph.
+        "#};
+
+        let result = render_alerts(content).unwrap();
+        assert_debug_snapshot!(result);
+        assert_snapshot!(result);
     }
 }
