@@ -1,0 +1,23 @@
+---
+source: src/lib.rs
+expression: result
+---
+This should be a paragraph.
+
+> This should be a blockquote.
+> This should be in a previous blockquote.
+
+<div class="mdbook-alerts mdbook-alerts-note">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  note
+</p>
+
+
+This should be alert.
+This should be in a previous alert.
+
+</div>
+
+
+This should be a paragraph.
