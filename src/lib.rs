@@ -71,3 +71,75 @@ fn render_alerts(content: &str) -> Result<String, Error> {
     });
     Ok(content.into())
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_inject_stylesheet_includes_css() {
+        let content = "Hello, world!";
+        let result = inject_stylesheet(content).unwrap();
+        assert!(result.contains("<style>"));
+        assert!(result.contains(".mdbook-alerts"));
+        assert!(result.contains("</style>"));
+        assert!(result.contains("Hello, world!"));
+    }
+
+    #[test]
+    fn test_render_alerts_basic_alert() {
+        let input = "> [!note]\n> This is a note.";
+        let output = render_alerts(input).unwrap();
+        assert!(output.contains("note"));
+        assert!(output.contains("This is a note."));
+        assert_eq!(
+            output,
+            r#"<div class="mdbook-alerts mdbook-alerts-note">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  note
+</p>
+
+
+This is a note.
+
+</div>
+"#
+        );
+    }
+
+    #[test]
+    fn test_render_alerts_multiple_alerts() {
+        let input = "> [!warning]\n> Warning 1.\n\n> [!tip]\n> Tip 2.";
+        let output = render_alerts(input).unwrap();
+        assert!(output.contains("warning"));
+        assert!(output.contains("Warning 1."));
+        assert!(output.contains("tip"));
+        assert!(output.contains("Tip 2."));
+        assert_eq!(
+            output,
+            r#"<div class="mdbook-alerts mdbook-alerts-warning">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  warning
+</p>
+
+
+Warning 1.
+
+</div>
+
+
+<div class="mdbook-alerts mdbook-alerts-tip">
+<p class="mdbook-alerts-title">
+  <span class="mdbook-alerts-icon"></span>
+  tip
+</p>
+
+
+Tip 2.
+
+</div>
+"#
+        );
+    }
+}
