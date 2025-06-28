@@ -57,7 +57,7 @@ fn render_alerts(content: &str) -> Result<String, Error> {
     let alerts = std::str::from_utf8(alerts.data.as_ref())?;
     let alerts = alerts.replace("\r\n", "\n");
     let newline = find_newline(content);
-    let content = content.replace(&newline, "\n");
+    let content = content.replace(newline, "\n");
     let content = content.as_str();
     let content = RE.replace_all(content, |caps: &regex::Captures| {
         let kind = caps
@@ -84,7 +84,11 @@ fn find_newline(content: &str) -> &'static str {
         '\n' => lf += 1,
         _ => {}
     });
-    return if cr == lf { "\r\n" } else { "\n" };
+    if cr == lf {
+        "\r\n"
+    } else {
+        "\n"
+    }
 }
 
 #[cfg(test)]
@@ -132,10 +136,6 @@ mod tests {
         assert_debug_snapshot!(result);
         assert_snapshot!(result);
     }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
 
     #[test]
     fn test_inject_stylesheet_includes_css() {
