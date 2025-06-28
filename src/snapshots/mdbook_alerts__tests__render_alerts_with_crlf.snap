@@ -1,0 +1,5 @@
+---
+source: src/lib.rs
+expression: result
+---
+"This should be a paragraph.\r\n\r\n> This should be a blockquote.\r\n> This should be in a previous blockquote.\r\n\r\n<div class=\"mdbook-alerts mdbook-alerts-note\">\r\n<p class=\"mdbook-alerts-title\">\r\n  <span class=\"mdbook-alerts-icon\"></span>\r\n  note\r\n</p>\r\n\r\n\r\nThis should be alert.\r\nThis should be in a previous alert.\r\n\r\n</div>\r\n\r\n\r\nThis should be a paragraph.\r\n"
