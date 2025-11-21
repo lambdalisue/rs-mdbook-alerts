@@ -7,6 +7,11 @@
 
 # mdbook-alerts
 
+> [!IMPORTANT]
+>
+> mdBook itself now support this feature natively.
+> https://rust-lang.github.io/mdBook/format/markdown.html#admonitions
+
 [mdBook] preprocessor to add [GitHub Flavored Markdown's Alerts](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts) to your book like:
 
 ```markdown
